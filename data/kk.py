@@ -1,6 +1,7 @@
 
 from pynput.keyboard import Key, Controller
 from random import randint
+import random
 
 import numpy as np
 from PIL import ImageGrab as ig
@@ -15,7 +16,7 @@ load_saved = False
 save_current_pool = 1
 current_pool = []
 fitness = []
-total_models = 50
+total_models = 6
 generation = 1
 
 def save_pool():
@@ -46,8 +47,12 @@ def predict_action(neural_input, model_num):
     neural_input = np.atleast_2d(neural_input) #(560, 750, 3)
     neural_input = np.expand_dims(neural_input,axis=0)
     output_prob = current_pool[model_num].predict([neural_input])
-    print(output_prob)
-    return do_it_randomly()
+    x = np.argmax(output_prob)
+    print(output_prob," => ",generated_input[x])
+    print("===> ", model_num)
+    print(model_num)
+    return generated_input[x]
+    #return do_it_randomly()
     # if output_prob[0] <= 0.5:
     #     # Perform the jump action
     #     return 1
@@ -63,11 +68,11 @@ def do_it_randomly():
     return generated_input[randint(0, len(generated_input)-1)]
 
 def collect_frame():
-    screen = np.array(ig.grab(bbox = (0,40,750,600)))
+    screen = np.array(ig.grab(bbox = (0,500,750,600)))
     grey_screen = cv2.Canny(screen,threshold1=200,threshold2=300)
     # we can also try retrurning colored screen here... inc processing by 3 
     # but removing ambiguity of bushes,pipe,enemy.
-    # cv2.imshow('MARIO', screen)
+    cv2.imshow('MARIO', screen)
     cv2.waitKey(1)
     return grey_screen
     
@@ -81,8 +86,7 @@ def do_it_genetically(model_num):
     frame = collect_frame()
     if not model_built:
         model_built = True
-        return predict_action(frame,model_num)
-    return do_it_randomly()
+    return predict_action(frame,model_num)
 
 def load_saved_pool():
     for i in range(total_models):
@@ -92,11 +96,11 @@ def load_saved_pool():
 def init_models():
     for i in range(total_models):
         model = Sequential() 
-        model.add(Conv2D(32,(3,3), activation='relu', input_shape=(560,750,1)))# dim of image
+        model.add(Conv2D(32,(3,3), activation='relu', input_shape=(100,750,1)))# dim of image
         model.add(Flatten())
 #        model.add(Dropout(0.5))
 #        model.add(Dense(16,activation='relu'))
-        model.add(Dense(4,activation='sigmoid'))
+        model.add(Dense(3,activation='sigmoid'))
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss="mse", optimizer=sgd, metrics=["accuracy"])
         current_pool.append(model)

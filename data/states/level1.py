@@ -639,6 +639,7 @@ class Level1(tools._State):
             self.mario.rect.right = collider.rect.left
         else:
             self.mario.rect.left = collider.rect.right
+        tools.current_fitness -= 10  
 
         self.mario.x_vel = 0
 
