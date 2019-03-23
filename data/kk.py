@@ -7,16 +7,16 @@ import numpy as np
 from PIL import ImageGrab as ig
 import cv2
 import time
-
+from .components import info
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Flatten, Dropout
 from keras.optimizers import SGD
-model_built = 0
-load_saved = False
+model_built = False
+load_saved = True
 save_current_pool = 1
 current_pool = []
 fitness = []
-total_models = 6
+total_models = 14
 generation = 1
 
 def save_pool():
@@ -37,20 +37,34 @@ def model_crossover(model_idx1, model_idx2):
 def model_mutate(weights):
     for xi in range(len(weights)):
         for yi in range(len(weights[xi])):
-            if random.uniform(0, 1) > 0.85:
+            temp2 = random.uniform(0, 1)
+            print("In mutation random value is ",temp2," > 0.85")
+            if  temp2 > 0.85:
                 change = random.uniform(-0.5,0.5)
                 weights[xi][yi] += change
+                # print(weights[xi][yi],change)
+                # try:
+                #     if weights[xi][yi]>=1.0:
+                #         weights[xi][yi]-=0.5
+                # except:
+                #     pass
     return weights
 
 def predict_action(neural_input, model_num):
     neural_input = np.expand_dims(neural_input,axis=3)
     neural_input = np.atleast_2d(neural_input) #(560, 750, 3)
     neural_input = np.expand_dims(neural_input,axis=0)
+    
     output_prob = current_pool[model_num].predict([neural_input])
     x = np.argmax(output_prob)
-    print(output_prob," => ",generated_input[x])
-    print("===> ", model_num)
-    print(model_num)
+    # print(output_prob," => ",generated_input[x])
+    #if info.current_time % 5 == 0:
+     #   x = 1
+    #else:
+     #   x = 0
+
+    # print("===> ", model_num)
+    # print(model_num)
     return generated_input[x]
     #return do_it_randomly()
     # if output_prob[0] <= 0.5:
@@ -62,7 +76,7 @@ def predict_action(neural_input, model_num):
     # return 2
 
 
-generated_input = [Key.right,'a',Key.left]
+generated_input = ['a',Key.right,Key.left]
 
 def do_it_randomly():
     return generated_input[randint(0, len(generated_input)-1)]
@@ -72,20 +86,18 @@ def collect_frame():
     grey_screen = cv2.Canny(screen,threshold1=200,threshold2=300)
     # we can also try retrurning colored screen here... inc processing by 3 
     # but removing ambiguity of bushes,pipe,enemy.
-    cv2.imshow('MARIO', screen)
+    # cv2.imshow('MARIO', screen)
     cv2.waitKey(1)
     return grey_screen
     
 def do_it_genetically(model_num):
     global model_built
-    if not model_built:
-        if load_saved:
+    if not model_built: #ek toh model built ki value jo hai woh 0 hai !!
+        init_models()
+        if load_saved:#load save ki boolean value kaha change hori hai?
             load_saved_pool()
-        else:
-            init_models()
-    frame = collect_frame()
-    if not model_built:
         model_built = True
+    frame = collect_frame()#frame of picture collect kr rhe
     return predict_action(frame,model_num)
 
 def load_saved_pool():

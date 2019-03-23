@@ -3,6 +3,7 @@ from __future__ import division
 
 import pygame as pg
 from .. import setup, tools
+from .. import main as m
 from .. import constants as c
 from .. import game_sound
 from .. components import mario
@@ -639,8 +640,8 @@ class Level1(tools._State):
             self.mario.rect.right = collider.rect.left
         else:
             self.mario.rect.left = collider.rect.right
-        tools.current_fitness -= 10  
-
+        print("collided")
+        m.run_it.collided_then()
         self.mario.x_vel = 0
 
 

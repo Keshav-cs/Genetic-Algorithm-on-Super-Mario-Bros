@@ -5,6 +5,7 @@ from pynput.keyboard import Key, Controller
 from random import randint
 import random
 from . import kk
+from . import constants as c
 
 kkb = Controller()
 gap_between_keypress = 0
@@ -18,12 +19,14 @@ keybinding = {
     'down':pg.K_DOWN
 }
 
+
+temp_pointer = 0
 model_number = 1
 current_pool = kk.current_pool
 temp_for_model_num_bug = False
 models_fitness = kk.fitness
 current_fitness = 0
-
+last_3_keys = [0,1,2]
 class Control(object):
     """Control class for entire project. Contains the game loop, and contains
     the event_loop which passes events to States as needed. Logic for flipping
@@ -68,17 +71,32 @@ class Control(object):
     def event_loop(self):
         global gap_between_keypress
         global to_press
+        global last_3_keys 
+        global temp_pointer
         gap_between_keypress+=1
-        if gap_between_keypress % 30 == 0:
+        if gap_between_keypress % 30 == 0 and not self.state_dict[c.LOAD_SCREEN].persist[c.MARIO_DEAD]:
             gap_between_keypress = 1
-            global model_number
-            to_press = kk.do_it_genetically(model_number) #logic
+            if last_3_keys.count('a')<3 and last_3_keys.count(Key.left)<3:
+                global model_number
+                to_press = kk.do_it_genetically(model_number)
+                # print(current_pool[model_number].get_weights(),model_number)#logic
+                #from the model we are getting the key which is to be pressed. 
+                # print(self.state_dict,self.state,self.state_name)
+                global current_fitness
+                if to_press == Key.right:
+                    print(model_number," =>> ",current_fitness)
+                    current_fitness += 30                    
+                if to_press == 'a':
+                    print(model_number," =>> ",current_fitness)
+                    current_fitness += 100
+            else:
+                #not working
+                to_press = Key.right
+                current_fitness -= 200
+                print(model_number," =>> ",current_fitness)
+            last_3_keys[(temp_pointer+1)%3] = to_press
+            temp_pointer+=1
         kkb.press(to_press)
-        # print(self.state_dict,self.state,self.state_name)
-        if to_press == Key.right:
-            global current_fitness
-            current_fitness += 2
-
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.done = True
@@ -90,20 +108,31 @@ class Control(object):
             self.state.get_event(event)
         kkb.release(to_press)
 
+    def collided_then(self):
+        global current_fitness
+        current_fitness -= 1
+        
+
     def mar_gya(self):
         global model_number,temp_for_model_num_bug
-        if not temp_for_model_num_bug:
+        if not temp_for_model_num_bug:###whatsss n why is this ????
             temp_for_model_num_bug = True
         else:
             temp_for_model_num_bug = False
-            global models_fitness
-            models_fitness[model_number] = current_fitness
+            global models_fitness,current_fitness
+            if self.state_dict[c.LOAD_SCREEN].persist[c.CURRENT_TIME]== 0:
+                current_fitness -= 10    
+            print(" Model num => ",model_number," Fitness => ",current_fitness)
+            print(" Model num => ",model_number," Fitness => ",current_fitness)
+            print(" Model num => ",model_number," Fitness => ",current_fitness)
+            if kk.model_built:
+                models_fitness[model_number] = current_fitness
+            current_fitness = 0
             model_number += 1
-        print("===> ", model_number)
-        print(model_number)
-        model_number%=kk.total_models
-        if model_number == 0:
-            self.mutate_etc() #code aayga
+            print("===> ", model_number)
+            model_number%=kk.total_models
+            if model_number == 0:
+                self.mutate_etc() #code aayga
 
     def mutate_etc(self):
         global current_pool
@@ -114,30 +143,23 @@ class Control(object):
         total_fitness = 0
         for select in range(total_models):
             total_fitness += models_fitness[select]
-        for select in range(total_models):
-            models_fitness[select] /= total_fitness#make sures ki fitness har model ki 0 aur 1 k beech m ho.
-            if select > 0:
-                models_fitness[select] += models_fitness[select-1]#yeh ni samjha. baad m htana hai dheere se
+
+        print(models_fitness)
+        print(total_fitness)
+        temp = sorted(models_fitness)
+        print(temp)
+
         for select in range(int(total_models/2)):#mtln half hi models ko hum iterate kr rhe hai.
-            parent1 = random.uniform(0, 1)#randomly choose kr rhe hai
-            parent2 = random.uniform(0, 1)#same
-            idx1 = -1
-            idx2 = -1
-            for idxx in range(total_models):
-                if models_fitness[idxx] >= parent1:#puts the last model jiski fitness jyada ho parent1 se.
-                    idx1 = idxx
-                    break
-            for idxx in range(total_models):
-                if models_fitness[idxx] >= parent2:
-                    idx2 = idxx
-                    break
+            idx1 = models_fitness.index(temp[-select-1])
+            idx2 = models_fitness.index(temp[-select-2])
+            print(idx1,idx2,temp[-select-2],temp[-select-1])
             new_weights1 = kk.model_crossover(idx1, idx2)#new weight kaise milre cause idx1 idx2 are just integer values.
     #new_weights1 ek array hai jis m idx1 aur idx2 k models k weight ka crossover kr k as return hora hai as array. 
-            updated_weights1 = kk.model_mutate(new_weights1[0])#new weights of model at idx1
+            # updated_weights1 = kk.model_mutate(new_weights1[0])#new weights of model at idx1
     #okay man just thode random changes kr k wapas aare hai hume
-            updated_weights2 = kk.model_mutate(new_weights1[1])
-            new_weights.append(updated_weights1)
-            new_weights.append(updated_weights2)
+            # updated_weights2 = kk.model_mutate(new_weights1[1])
+            new_weights.append(new_weights1[0])
+            new_weights.append(new_weights1[1])
         for select in range(len(new_weights)):
             models_fitness[select] = -100
             current_pool[select].set_weights(new_weights[select])
