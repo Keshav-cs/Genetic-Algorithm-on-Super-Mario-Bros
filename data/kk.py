@@ -12,11 +12,11 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Flatten, Dropout
 from keras.optimizers import SGD
 model_built = False
-load_saved = True
+load_saved = False
 save_current_pool = 1
 current_pool = []
 fitness = []
-total_models = 14
+total_models = 34
 generation = 1
 
 def save_pool():

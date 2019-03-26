@@ -76,7 +76,7 @@ class Control(object):
         gap_between_keypress+=1
         if gap_between_keypress % 30 == 0 and not self.state_dict[c.LOAD_SCREEN].persist[c.MARIO_DEAD]:
             gap_between_keypress = 1
-            if last_3_keys.count('a')<3 and last_3_keys.count(Key.left)<3:
+            if last_3_keys.count('a')<3 and last_3_keys.count(Key.left)<3 and last_3_keys.count(Key.right)!=0:
                 global model_number
                 to_press = kk.do_it_genetically(model_number)
                 # print(current_pool[model_number].get_weights(),model_number)#logic
@@ -149,19 +149,34 @@ class Control(object):
         temp = sorted(models_fitness)
         print(temp)
 
-        for select in range(int(total_models/2)):#mtln half hi models ko hum iterate kr rhe hai.
+        for select in range(int(total_models/4)):#mtln half hi models ko hum iterate kr rhe hai.
             idx1 = models_fitness.index(temp[-select-1])
             idx2 = models_fitness.index(temp[-select-2])
+            if idx1==idx2:
+                indices = [i for i, x in enumerate(models_fitness) if x == temp[-select-3]]
+                for temp2 in range(len(indices)):
+                    if indices[temp2] != idx1:
+                        idx2 = indices[temp2]
+                        break
             print(idx1,idx2,temp[-select-2],temp[-select-1])
             new_weights1 = kk.model_crossover(idx1, idx2)#new weight kaise milre cause idx1 idx2 are just integer values.
-    #new_weights1 ek array hai jis m idx1 aur idx2 k models k weight ka crossover kr k as return hora hai as array. 
-            # updated_weights1 = kk.model_mutate(new_weights1[0])#new weights of model at idx1
-    #okay man just thode random changes kr k wapas aare hai hume
-            # updated_weights2 = kk.model_mutate(new_weights1[1])
+            new_weights.append(new_weights1[0])
+            new_weights.append(new_weights1[1])
+        for select in range(int(total_models/4)):#mtln half hi models ko hum iterate kr rhe hai.
+            idx1 = models_fitness.index(temp[-select-1])
+            idx2 = models_fitness.index(temp[-select-3])
+            if idx1==idx2:
+                indices = [i for i, x in enumerate(models_fitness) if x == temp[-select-3]]
+                for temp2 in range(len(indices)):
+                    if indices[temp2] != idx1:
+                        idx2 = indices[temp2]
+                        break
+            print(idx1,idx2,temp[-select-2],temp[-select-1])
+
+            new_weights1 = kk.model_crossover(idx1, idx2)#new weight kaise milre cause idx1 idx2 are just integer values.
             new_weights.append(new_weights1[0])
             new_weights.append(new_weights1[1])
         for select in range(len(new_weights)):
-            models_fitness[select] = -100
             current_pool[select].set_weights(new_weights[select])
         kk.save_pool()
         return
