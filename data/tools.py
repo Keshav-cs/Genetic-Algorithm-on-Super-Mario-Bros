@@ -26,7 +26,8 @@ current_pool = kk.current_pool
 temp_for_model_num_bug = False
 models_fitness = kk.fitness
 current_fitness = 0
-last_3_keys = [0,1,2]
+last_3_keys = [0,1,Key.right]
+last_10_keys = [0,1,2,3,4,5,6,7,8,'a']
 class Control(object):
     """Control class for entire project. Contains the game loop, and contains
     the event_loop which passes events to States as needed. Logic for flipping
@@ -72,11 +73,12 @@ class Control(object):
         global gap_between_keypress
         global to_press
         global last_3_keys 
+        global last_6_keys 
         global temp_pointer
         gap_between_keypress+=1
         if gap_between_keypress % 30 == 0 and not self.state_dict[c.LOAD_SCREEN].persist[c.MARIO_DEAD]:
             gap_between_keypress = 1
-            if last_3_keys.count('a')<3 and last_3_keys.count(Key.left)<3 and last_3_keys.count(Key.right)!=0:
+            if last_3_keys.count('a')<3 and last_3_keys.count(Key.left)<3 and last_3_keys.count(Key.right)!=0 and last_10_keys.count('a')!=0:
                 global model_number
                 to_press = kk.do_it_genetically(model_number)
                 # print(current_pool[model_number].get_weights(),model_number)#logic
@@ -85,18 +87,27 @@ class Control(object):
                 global current_fitness
                 if to_press == Key.right:
                     print(model_number," =>> ",current_fitness)
-                    current_fitness += 30                    
+                    current_fitness += 15                    
                 if to_press == 'a':
                     print(model_number," =>> ",current_fitness)
-                    current_fitness += 100
+                    current_fitness += 50
             else:
                 #not working
-                to_press = Key.right
-                current_fitness -= 200
+
+                change = random.uniform(-0.5,0.5)
+                if change > 0:
+                    to_press = Key.right
+                else:
+                    to_press = 'a'
+                current_fitness -= 100
                 print(model_number," =>> ",current_fitness)
             last_3_keys[(temp_pointer+1)%3] = to_press
+            last_10_keys[(temp_pointer+1)%10] = to_press
             temp_pointer+=1
+            print(last_3_keys.count('a')<3,last_3_keys.count(Key.left)<3,last_3_keys.count(Key.right)!=0,last_10_keys.count('a')!=0)
+            print(to_press)
         kkb.press(to_press)
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.done = True
@@ -108,10 +119,15 @@ class Control(object):
             self.state.get_event(event)
         kkb.release(to_press)
 
-    def collided_then(self):
+    def ryt_col(self):
         global current_fitness
         current_fitness -= 1
         
+
+    def down_col(self):
+        global current_fitness
+        current_fitness += 200
+        print("Good Job")
 
     def mar_gya(self):
         global model_number,temp_for_model_num_bug
@@ -127,6 +143,12 @@ class Control(object):
             print(" Model num => ",model_number," Fitness => ",current_fitness)
             if kk.model_built:
                 models_fitness[model_number] = current_fitness
+            if current_fitness>500:
+                print("Doing again")
+                current_pool[model_number].save_weights("Best_Model_Pool/model_new" + str(model_number) + ".keras")
+                current_pool[model_number].load_weights("Best_Model_Pool/model_new"+str(model_number)+".keras")
+                model_number-=1
+                time.sleep(2)
             current_fitness = 0
             model_number += 1
             print("===> ", model_number)
@@ -159,9 +181,11 @@ class Control(object):
                         idx2 = indices[temp2]
                         break
             print(idx1,idx2,temp[-select-2],temp[-select-1])
+            time.sleep(1)
             new_weights1 = kk.model_crossover(idx1, idx2)#new weight kaise milre cause idx1 idx2 are just integer values.
             new_weights.append(new_weights1[0])
             new_weights.append(new_weights1[1])
+
         for select in range(int(total_models/4)):#mtln half hi models ko hum iterate kr rhe hai.
             idx1 = models_fitness.index(temp[-select-1])
             idx2 = models_fitness.index(temp[-select-3])
@@ -172,11 +196,12 @@ class Control(object):
                         idx2 = indices[temp2]
                         break
             print(idx1,idx2,temp[-select-2],temp[-select-1])
-
+            time.sleep(1)
             new_weights1 = kk.model_crossover(idx1, idx2)#new weight kaise milre cause idx1 idx2 are just integer values.
             new_weights.append(new_weights1[0])
             new_weights.append(new_weights1[1])
         for select in range(len(new_weights)):
+            print(select,"new weight set")
             current_pool[select].set_weights(new_weights[select])
         kk.save_pool()
         return

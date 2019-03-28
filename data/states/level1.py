@@ -641,7 +641,7 @@ class Level1(tools._State):
         else:
             self.mario.rect.left = collider.rect.right
         print("collided")
-        m.run_it.collided_then()
+        m.run_it.ryt_col()
         self.mario.x_vel = 0
 
 
@@ -694,6 +694,8 @@ class Level1(tools._State):
         powerup = pg.sprite.spritecollideany(self.mario, self.powerup_group)
 
         brick, coin_box = self.prevent_collision_conflict(brick, coin_box)
+        if coin_box or brick:
+          m.run_it.down_col()
 
         if coin_box:
             self.adjust_mario_for_y_coin_box_collisions(coin_box)

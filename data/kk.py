@@ -12,15 +12,16 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Conv2D, MaxPooling2D, Flatten, Dropout
 from keras.optimizers import SGD
 model_built = False
-load_saved = False
+load_saved = True
 save_current_pool = 1
 current_pool = []
 fitness = []
-total_models = 34
+total_models = 10
 generation = 1
 
 def save_pool():
     for xi in range(total_models):
+        print(xi-1,"models saved")
         current_pool[xi].save_weights("Current_Model_Pool/model_new" + str(xi) + ".keras")
     print("Saved current pool!")
 
@@ -102,8 +103,8 @@ def do_it_genetically(model_num):
 
 def load_saved_pool():
     for i in range(total_models):
+        print(i-1,"models loaded")
         current_pool[i].load_weights("Current_Model_Pool/model_new"+str(i)+".keras")
-        fitness.append(0)
 
 def init_models():
     for i in range(total_models):
@@ -111,7 +112,7 @@ def init_models():
         model.add(Conv2D(32,(3,3), activation='relu', input_shape=(100,750,1)))# dim of image
         model.add(Flatten())
 #        model.add(Dropout(0.5))
-#        model.add(Dense(16,activation='relu'))
+        model.add(Dense(16,activation='relu'))
         model.add(Dense(3,activation='sigmoid'))
         sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
         model.compile(loss="mse", optimizer=sgd, metrics=["accuracy"])
