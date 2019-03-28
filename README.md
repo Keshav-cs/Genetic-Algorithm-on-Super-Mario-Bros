@@ -1,18 +1,9 @@
-Super Mario Bros Level 1
+Genetics to Super Mario Bros Level 1
 =============
 
-An attempt to recreate the first level of Super Mario Bros.
+An attempt to solve the first level of Super Mario Bros by ai-Genetic algorithm.
 
 ![screenshot](https://raw.github.com/justinmeister/Mario-Level-1/master/screenshot.png)
-
-CONTROLS: 
-
-Arrow keys for direction
-
-'a' for jump
-
-'s' for action (fireball, run)
-
 
 DEPENDENCIES:
 
@@ -24,10 +15,7 @@ To install dependencies for Python 2.x:
 
 	pip install -r requirements.txt
 
-VIDEO DEMO:
-
-http://www.youtube.com/watch?v=HBbzYKMfx5Y
-   
 DISCLAIMER:
 
-This project is intended for non-commercial educational purposes.
+This project is intended for non-commercial educational purposes. 
+Special thanks to https://github.com/justinmeister/Mario-Level-1 who has coded this level in python.
