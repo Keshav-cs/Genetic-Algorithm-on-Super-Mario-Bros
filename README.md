@@ -11,8 +11,8 @@ DISCLAIMER:
 This project is intended for non-commercial educational purposes. 
 Special thanks to https://github.com/justinmeister/Mario-Level-1 who has coded this level in python.
 
-Average Performance
-![Average_Performance](https://github.com/Keshav-cs/Genetic-Algorithm-on-Super-Mario-Bros/blob/master/AveragePerformance.gif)
+# In Middle of Learning
+![In Middle of Learning](https://github.com/Keshav-cs/Genetic-Algorithm-on-Super-Mario-Bros/blob/master/AveragePerformance.gif)
 
-  # BEST Performance
-![Best_Performance](https://j.gifs.com/r8MD9B.gif)
+# BEST Performance
+![In Middle of Learning](https://github.com/Keshav-cs/Genetic-Algorithm-on-Super-Mario-Bros/blob/master/BestOfAll.gif)
